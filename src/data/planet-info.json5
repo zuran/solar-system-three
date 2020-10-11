@@ -6,6 +6,7 @@
       period: 0,
       distance: 0,
       color: 0xffdf3f,
+      translucent: true,
     },
     {
       name: 'Mercury',
@@ -47,14 +48,14 @@
       diameter: 120536,
       period: 10747,
       distance: 1433.5,
-      color: 0xd5dbdb,
+      color: 0xdadba3,
     },
     {
       name: 'Uranus',
       diameter: 51118,
       period: 30589,
       distance: 2872.5,
-      color: 0xd4e6f1,
+      color: 0xd4a6f1,
     },
     {
       name: 'Neptune',
