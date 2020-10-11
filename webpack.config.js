@@ -13,7 +13,7 @@ module.exports = {
     contentBase: './dist',
   },
   plugins: [
-    new CleanWebpackPlugin({ cleanStaleWebpackAssets: false }),
+    //new CleanWebpackPlugin({ cleanStaleWebpackAssets: false }),
     new HtmlWebpackPlugin({
       //title: 'Solar System Test',
       template: path.join(__dirname, 'src/html/index.html'),
