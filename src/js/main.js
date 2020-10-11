@@ -29,12 +29,12 @@ export default class Main {
 
     {
       const color = 0xFFFFFF;
-      const intensity = .6;
+      const intensity = .7;
       const light = new THREE.PointLight(color, intensity);
       light.position.set(0, 0, 0);
       scene.add(light);
 
-      const amblight = new THREE.AmbientLight(color, 0.2);
+      const amblight = new THREE.AmbientLight(color, 0.15);
       scene.add(amblight);
     }
 
@@ -57,6 +57,24 @@ export default class Main {
       const longitudeScale = Math.PI / 180;
 
       let planets = [];
+      let asteroids = [];
+
+      for(let i = 0; i < 500; i++) {
+        const astGeo = new THREE.SphereBufferGeometry(0.0007, 4, 4);
+        const astMat = new THREE.MeshPhongMaterial({color: 0xD2691E});
+        const asteroid = new THREE.Mesh(astGeo, astMat);
+
+        asteroid.longitude = Math.random() * Math.PI * 2;
+        asteroid.distance = 0.2 + Math.pow(
+          Math.sin(Math.random() * 2 * Math.PI), 2) * 0.08
+        asteroid.period = 5 + Math.random() * 3;//0.5;
+        asteroid.rotation.x = Math.random() * Math.PI * 2;
+        asteroid.rotation.y = Math.random() * Math.PI * 2;
+        asteroid.rotation.z = Math.random() * Math.PI * 2;
+        asteroid.position.z = .001 - Math.random() * .02;
+        planets.push(asteroid);
+        scene.add(asteroid);
+      }
       // loop through bodies and add to scene;
       planetinfo.bodies.forEach(p => {
         if(p.name == 'Sun') return;
@@ -73,7 +91,7 @@ export default class Main {
           ring.distance = p.distance * distanceScale;
           ring.period = p.period * periodScale;
           ring.longitude = p.longitude * longitudeScale;
-          ring.rotation.x = Math.PI/8;
+          ring.rotation.x = Math.PI/6;
           //ring.rotation.y = Math.PI / 2;          
           planets.push(ring);
           scene.add(ring);
