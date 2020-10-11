@@ -15,6 +15,10 @@ export default class Main {
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     camera.position.z = .1;
     camera.position.y = -.5;
+
+    //camera.position.z = 2;
+    //camera.position.y = 0;
+
     camera.lookAt(0,0,0);
   
     const scene = new THREE.Scene();
@@ -25,12 +29,12 @@ export default class Main {
 
     {
       const color = 0xFFFFFF;
-      const intensity = .5;
+      const intensity = .6;
       const light = new THREE.PointLight(color, intensity);
       light.position.set(0, 0, 0);
       scene.add(light);
 
-      const amblight = new THREE.AmbientLight(color, 0.3);
+      const amblight = new THREE.AmbientLight(color, 0.2);
       scene.add(amblight);
     }
 
@@ -49,7 +53,8 @@ export default class Main {
       // planetery scale multipliers - need to massage these to normalize the size somewhat
       const diameterScale = 0.0000005;
       const distanceScale = 0.0008;
-      const periodScale = 0.002;
+      const periodScale = 0.003;
+      const longitudeScale = Math.PI / 180;
 
       let planets = [];
       // loop through bodies and add to scene;
@@ -58,10 +63,26 @@ export default class Main {
         const geo = new THREE.SphereBufferGeometry(p.diameter * diameterScale, 64, 64);
         const mat = new THREE.MeshPhongMaterial({color: p.color});
         const planet = new THREE.Mesh(geo, mat);
+
+        if(p.name == 'Saturn') {
+          // add ring
+          const ringGeo = new THREE.RingBufferGeometry(p.diameter * diameterScale * 1.15, p.diameter * diameterScale * 1.8, 64);
+          const ringMat = new THREE.MeshPhongMaterial({color: p.color * .9});
+          const ring = new THREE.Mesh(ringGeo, ringMat);
+          ring.position.x = p.distance * distanceScale;
+          ring.distance = p.distance * distanceScale;
+          ring.period = p.period * periodScale;
+          ring.longitude = p.longitude * longitudeScale;
+          ring.rotation.x = Math.PI/8;
+          //ring.rotation.y = Math.PI / 2;          
+          planets.push(ring);
+          scene.add(ring);
+        }
         // test distance and period scales
         planet.position.x = p.distance * distanceScale;
         planet.distance = p.distance * distanceScale;
         planet.period = p.period * periodScale;
+        planet.longitude = p.longitude * longitudeScale;
         planets.push(planet);
         scene.add(planet);
       });
@@ -86,8 +107,8 @@ export default class Main {
       
 
       bodies.forEach(planet => {
-        planet.position.x = Math.cos(time * 1/planet.period) * planet.distance;
-        planet.position.y = Math.sin(time * 1/planet.period) * planet.distance;
+        planet.position.x = Math.cos(time * 1/planet.period + planet.longitude) * planet.distance;
+        planet.position.y = Math.sin(time * 1/planet.period + planet.longitude) * planet.distance;
       });
 
       renderer.render(scene, camera);
