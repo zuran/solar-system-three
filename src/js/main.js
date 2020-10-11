@@ -1,7 +1,10 @@
 import * as THREE from 'three';
+import planetinfo from '../data/planet-info.json5';
 
 export default class Main {
   constructor() {
+    console.log(planetinfo.bodies[1].name);
+
     const canvas = document.querySelector('#c');
     const renderer = new THREE.WebGLRenderer({canvas});
   

@@ -1,20 +1,64 @@
 {
   bodies: [
     {
-      name: 'mercury',
-      size: .5,
+      name: 'Sun',
+      diameter: 1392700,
+      period: 0,
+      distance: 0,
     },
     {
-      name: 'venus',
-      size: .9,
+      name: 'Mercury',
+      diameter: 4879,
+      period: 88,
+      distance: 57.9,
     },
     {
-      name: 'earth',
-      size: 1,
+      name: 'Venus',
+      diameter: 12104,
+      period: 224.7,
+      distance: 108.2,
     },
     {
-      name: 'mars',
-      size: .7,
+      name: 'Earth',
+      diameter: 12756,
+      period: 365.2,
+      distance: 149.6,
+    },
+    {
+      name: 'Mars',
+      diameter: 6792,
+      period: 687,
+      distance: 227.9,
+    },
+    {
+      name: 'Jupiter',
+      diameter: 142984,
+      period: 4331,
+      distance: 778.6,
+    },
+    {
+      name: 'Saturn',
+      diameter: 120536,
+      period: 10747,
+      distance: 1433.5,
+    },
+    {
+      name: 'Uranus',
+      diameter: 51118,
+      period: 30589,
+      distance: 2872.5,
+    },
+    {
+      name: 'Neptune',
+      diameter: 49528,
+      period: 59800,
+      distance: 4495.1,
+    },
+    {
+      name: 'Pluto',
+      diameter: 2370,
+      period: 90560,
+      distance: 5906.4,
     },
   ],
 }
