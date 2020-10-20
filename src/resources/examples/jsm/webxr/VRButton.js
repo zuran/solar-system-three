@@ -58,10 +58,10 @@ class VRButton {
 			};
 
 			button.onclick = function () {
-				callback();
 				
 				if ( currentSession === null ) {
-
+					callback(true);
+				
 					// WebXR's requestReferenceSpace only works if the corresponding feature
 					// was requested at session creation time. For simplicity, just ask for
 					// the interesting ones as optional features, but be aware that the
@@ -73,7 +73,8 @@ class VRButton {
 					navigator.xr.requestSession( 'immersive-vr', sessionInit ).then( onSessionStarted );
 
 				} else {
-
+					callback();
+				
 					currentSession.end();
 
 				}

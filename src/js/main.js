@@ -9,7 +9,7 @@ export default class Main {
     const canvas = document.querySelector('#c');
     const renderer = new THREE.WebGLRenderer({canvas});
     renderer.xr.enabled = true;
-    document.body.appendChild(VRButton.createButton(adjustForVR, renderer));
+    document.body.appendChild(VRButton.createButton(toggleVR, renderer));
   
     const fov = 45;
     const aspect = 2;  // the canvas default
@@ -18,61 +18,14 @@ export default class Main {
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     
     let isVR = false;
-    function adjustForVR() {
-      dolly.rotation.y = -Math.PI/2;
-      dolly.rotation.x = Math.PI;
-      dolly.position.set(-.5, 1, 0);
+    function toggleVR(isOn) {
+      dolly.rotation.y = isOn ? -Math.PI/2 : 0;
+      dolly.rotation.x = isOn ? Math.PI : 0;
+      if(isOn) dolly.position.set(-.5, 1, 0);
+      else dolly.position.set(0,0,0);
       
-      isVR = true;
+      isVR = isOn;
     }
-
-    const sunShader = `
-      #include <common>  
-
-      uniform vec3 iResolution;
-      uniform float iTime;
-
-      vec2 random2(vec2 p) {
-        return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);
-      }
-
-      void mainImage( out vec4 fragColor, in vec2 fragCoord )
-      {
-        // Normalized pixel coordinates (from 0 to 1)
-        vec2 st = fragCoord/iResolution.xy;
-        st.x *= iResolution.x/iResolution.y;
-        vec3 color = vec3(0.);
-        
-        st *= 50.;
-        vec2 i_st = floor(st);
-        vec2 f_st = fract(st);
-        
-        float m_dist = 1.;
-        for(int y = -1; y <=1; y++) {
-            for(int x = -1; x <=1; x++) {
-                vec2 neighbor = vec2(float(x),float(y));
-                
-                vec2 point = random2(i_st + neighbor);
-                
-                point = 0.5 + 0.5*sin(iTime + 6.2831*point);
-                vec2 diff = neighbor + point - f_st;
-                float dist = length(diff);
-                m_dist = min(m_dist,dist);
-            }
-        }
-        
-        color += m_dist * vec3(.8,.7,0);
-        color += (1.-m_dist) * vec3(.7,.2,.2);
-    
-        // Output to screen
-        fragColor = vec4(color,1.0);
-      }
-          
-      void main() {
-        mainImage(gl_FragColor, gl_FragCoord.xy);
-      }
-    `;
-
 
     //camera.position.z = 2;
     //camera.position.y = 0;
@@ -107,23 +60,13 @@ export default class Main {
 
     renderer.render(scene, camera);
 
-    const uniforms = {
-      iTime: { value: 0 },
-      iResolution: { value: new THREE.Vector3() },
-    };
-
-    const sun_material = new THREE.ShaderMaterial({
-      fragmentShader: sunShader,
-      uniforms,
-    });
-
     const geom = new THREE.SphereBufferGeometry(0.03, 64, 64);
     const mate = new THREE.MeshBasicMaterial({
       color: 0xccbb00,
       //opacity: 0.5,
       //transparent: true,
     });
-    const sun = new THREE.Mesh(geom, sun_material);
+    const sun = new THREE.Mesh(geom, mate);
     scene.add(sun);
 
     function createPlanets() {
@@ -188,10 +131,6 @@ export default class Main {
 
     function render(time) {
       time *= 0.001;
-
-      // sun material
-      uniforms.iResolution.value.set(canvas.width, canvas.height, 1);
-      uniforms.iTime.value = time;
 
       if(resizeRendererToDisplaySize(renderer)) {
         const canvas = renderer.domElement;
