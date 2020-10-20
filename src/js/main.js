@@ -57,7 +57,7 @@ export default class Main {
 
     {
       const color = 0xffffff;
-      const intensity = 0.7;
+      const intensity = 0.9;
       const light = new THREE.PointLight(color, intensity);
       light.position.set(0, 0, 0);
       scene.add(light);
@@ -69,7 +69,7 @@ export default class Main {
     renderer.render(scene, camera);
 
     const geom = new THREE.SphereBufferGeometry(0.03, 64, 64);
-    const mate = new THREE.MeshBasicMaterial({
+    const mate = new THREE.MeshStandardMaterial({
       color: 0xccbb00,
       //opacity: 0.5,
       //transparent: true,
@@ -77,10 +77,6 @@ export default class Main {
 
     const texLoader = new THREE.TextureLoader();
     //texLoader.load('../assets/2k_jupiter.jpg')
-
-    const jupiterMat = new THREE.MeshBasicMaterial({
-      map: texLoader.load(jupiterImg),
-    });
 
     const sun = new THREE.Mesh(
       geom,
@@ -92,14 +88,24 @@ export default class Main {
     scene.add(sun);
 
     const texMap = {
-      Mercury: new THREE.MeshBasicMaterial({ map: texLoader.load(mercuryImg) }),
-      Venus: new THREE.MeshBasicMaterial({ map: texLoader.load(venusImg) }),
-      Earth: new THREE.MeshBasicMaterial({ map: texLoader.load(earthImg) }),
-      Mars: new THREE.MeshBasicMaterial({ map: texLoader.load(marsImg) }),
-      Jupiter: new THREE.MeshBasicMaterial({ map: texLoader.load(jupiterImg) }),
-      Saturn: new THREE.MeshBasicMaterial({ map: texLoader.load(saturnImg) }),
-      Uranus: new THREE.MeshBasicMaterial({ map: texLoader.load(uranusImg) }),
-      Neptune: new THREE.MeshBasicMaterial({ map: texLoader.load(neptuneImg) }),
+      Mercury: new THREE.MeshStandardMaterial({
+        map: texLoader.load(mercuryImg),
+      }),
+      Venus: new THREE.MeshStandardMaterial({ map: texLoader.load(venusImg) }),
+      Earth: new THREE.MeshStandardMaterial({ map: texLoader.load(earthImg) }),
+      Mars: new THREE.MeshStandardMaterial({ map: texLoader.load(marsImg) }),
+      Jupiter: new THREE.MeshStandardMaterial({
+        map: texLoader.load(jupiterImg),
+      }),
+      Saturn: new THREE.MeshStandardMaterial({
+        map: texLoader.load(saturnImg),
+      }),
+      Uranus: new THREE.MeshStandardMaterial({
+        map: texLoader.load(uranusImg),
+      }),
+      Neptune: new THREE.MeshStandardMaterial({
+        map: texLoader.load(neptuneImg),
+      }),
     };
 
     function createPlanets() {
@@ -110,10 +116,11 @@ export default class Main {
       const longitudeScale = Math.PI / 180;
 
       let planets = [];
+      //const astMat = new THREE.MeshPhongMaterial({ color: 0xd2691e });
+      const astMat = new THREE.MeshPhongMaterial({ color: 0x886655 });
+      const astGeo = new THREE.SphereBufferGeometry(0.001, 8, 8);
 
       for (let i = 0; i < 200; i++) {
-        const astGeo = new THREE.SphereBufferGeometry(0.001, 8, 8);
-        const astMat = new THREE.MeshPhongMaterial({ color: 0xd2691e });
         const asteroid = new THREE.Mesh(astGeo, astMat);
 
         asteroid.longitude = Math.random() * Math.PI * 2;
@@ -129,8 +136,6 @@ export default class Main {
       }
       // loop through bodies and add to scene;
       planetinfo.bodies.forEach((p) => {
-        console.log(p.name + ':' + texMap[p.name]);
-
         if (p.name == 'Sun') return;
         const geo = new THREE.SphereBufferGeometry(
           p.diameter * diameterScale,
@@ -153,8 +158,8 @@ export default class Main {
           ring.distance = p.distance * distanceScale;
           ring.period = p.period * periodScale;
           ring.longitude = p.longitude * longitudeScale;
+          ring.dontRotate = true;
           ring.rotation.x = Math.PI / 6;
-          //ring.rotation.y = Math.PI / 2;
           planets.push(ring);
           scene.add(ring);
         }
@@ -185,6 +190,7 @@ export default class Main {
       // wiggle the sun
       sun.position.x = Math.cos(time * 2) * 0.0003;
       sun.position.z = Math.sin(time * 2) * 0.0003;
+      sun.rotation.y -= 0.001;
 
       bodies.forEach((planet) => {
         planet.position.x =
@@ -193,7 +199,7 @@ export default class Main {
         planet.position.z =
           Math.sin((time * 1) / planet.period + planet.longitude) *
           planet.distance;
-        planet.rotation.y += 0.01;
+        if (!planet.dontRotate) planet.rotation.y += 0.01;
       });
 
       renderer.render(scene, camera);
