@@ -28,23 +28,26 @@ module.exports = {
     rules: [
       {
         test: /\.css$/,
-        use: [
-          'style-loader',
-          'css-loader',
-        ],
+        use: ['style-loader', 'css-loader'],
       },
       {
         test: /\.xml$/,
-        use: [
-          'xml-loader',
-        ],
+        use: ['xml-loader'],
       },
       {
         test: /\.json5$/,
         type: 'json',
         parser: {
-          parse: json5.parse
+          parse: json5.parse,
         },
+      },
+      {
+        test: /\.(png|jpe?g|gif)$/i,
+        use: [
+          {
+            loader: 'file-loader',
+          },
+        ],
       },
     ],
   },
