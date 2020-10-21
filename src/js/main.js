@@ -10,6 +10,8 @@ import marsImg from '../assets/2k_mars.jpg';
 import neptuneImg from '../assets/2k_neptune.jpg';
 import uranusImg from '../assets/2k_uranus.jpg';
 import sunImg from '../assets/sunmap.jpg';
+import saturnRingImg from '../assets/2k_saturn_ring_alpha.png';
+import skybox from '../assets/milkyway.png';
 
 import { Loader } from 'three';
 
@@ -36,13 +38,14 @@ export default class Main {
       isVR = isOn;
     }
 
-    //camera.position.z = 2;
-    //camera.position.y = 0;
-
     camera.position.y = -0.1;
     camera.position.z = -0.5;
     camera.lookAt(0, 0, 0);
     camera.rotation.z = 2 * Math.PI;
+
+    // camera.position.z = 2;
+    // camera.position.y = 1;
+    // camera.lookAt(0, 0, 0);
 
     const scene = new THREE.Scene();
 
@@ -77,14 +80,22 @@ export default class Main {
 
     const texLoader = new THREE.TextureLoader();
     //texLoader.load('../assets/2k_jupiter.jpg')
+    // render skybox
+    const skytex = texLoader.load(skybox, () => {
+      const rt = new THREE.WebGLCubeRenderTarget(skytex.image.height);
+      rt.fromEquirectangularTexture(renderer, skytex);
+      scene.background = rt;
+    });
 
     const sun = new THREE.Mesh(
       geom,
       new THREE.MeshBasicMaterial({
-        color: 0xffffaa,
+        color: 0xffc800,
         map: texLoader.load(sunImg),
       })
     );
+    sun.rotationPeriod = (planetinfo.bodies[0].rotationPeriod * Math.PI) / 180;
+    sun.rotation.x = (planetinfo.bodies[0].rotationInclination * Math.PI) / 180;
     scene.add(sun);
 
     const texMap = {
@@ -126,7 +137,7 @@ export default class Main {
         asteroid.longitude = Math.random() * Math.PI * 2;
         asteroid.distance =
           0.2 + Math.pow(Math.sin(Math.random() * 2 * Math.PI), 2) * 0.25;
-        asteroid.period = 5 + Math.random() * 3; //0.5;
+        asteroid.period = 4 + Math.random() * 3; //0.5;
         asteroid.rotation.x = Math.random() * Math.PI * 2;
         asteroid.rotation.z = Math.random() * Math.PI * 2;
         asteroid.rotation.y = Math.random() * Math.PI * 2;
@@ -152,14 +163,18 @@ export default class Main {
             p.diameter * diameterScale * 1.8,
             64
           );
-          const ringMat = new THREE.MeshPhongMaterial({ color: p.color * 0.9 });
+          const ringMat = new THREE.MeshPhongMaterial({ color: 0x665577 });
           const ring = new THREE.Mesh(ringGeo, ringMat);
           ring.position.x = p.distance * distanceScale;
           ring.distance = p.distance * distanceScale;
           ring.period = p.period * periodScale;
           ring.longitude = p.longitude * longitudeScale;
           ring.dontRotate = true;
-          ring.rotation.x = Math.PI / 6;
+          ring.rotation.x =
+            -Math.PI / 2 + p.rotationInclination * longitudeScale + Math.PI;
+          ring.orbitalInclination = Math.sin(
+            p.orbitalInclination * longitudeScale
+          );
           planets.push(ring);
           scene.add(ring);
         }
@@ -168,7 +183,12 @@ export default class Main {
         planet.distance = p.distance * distanceScale;
         planet.period = p.period * periodScale;
         planet.longitude = p.longitude * longitudeScale;
-        planet.rotation.x = Math.PI;
+        planet.rotation.x = Math.PI + p.rotationInclination * longitudeScale;
+        planet.rotationPeriod = p.rotationPeriod * longitudeScale;
+        planet.rotationInclination = p.rotationInclination * longitudeScale;
+        planet.orbitalInclination = Math.sin(
+          p.orbitalInclination * longitudeScale
+        );
         planets.push(planet);
         scene.add(planet);
       });
@@ -190,7 +210,7 @@ export default class Main {
       // wiggle the sun
       sun.position.x = Math.cos(time * 2) * 0.0003;
       sun.position.z = Math.sin(time * 2) * 0.0003;
-      sun.rotation.y -= 0.001;
+      sun.rotation.y -= (1 / sun.rotationPeriod) * 0.01;
 
       bodies.forEach((planet) => {
         planet.position.x =
@@ -199,7 +219,14 @@ export default class Main {
         planet.position.z =
           Math.sin((time * 1) / planet.period + planet.longitude) *
           planet.distance;
-        if (!planet.dontRotate) planet.rotation.y += 0.01;
+        if (planet.orbitalInclination)
+          planet.position.y =
+            Math.sin(time / planet.period) *
+            planet.orbitalInclination *
+            planet.distance;
+        if (!planet.dontRotate && planet.rotationPeriod) {
+          planet.rotation.y += (1 / planet.rotationPeriod) * 0.005;
+        }
       });
 
       renderer.render(scene, camera);
