@@ -13,14 +13,14 @@
     },
     {
       name: 'Mercury',
-      diameter: 4879,
-      period: 88,
-      distance: 57.9,
+      diameter: 4879, // km
+      period: 88, // Earth days
+      distance: 57.9, // 10^6 km
       color: 0xba4a00,
-      longitude: 262,
-      rotationPeriod: 1407.6,
-      rotationInclination: 0,
-      orbitalInclination: 7,
+      longitude: 262, // degrees
+      rotationPeriod: 1407.6, // hours
+      rotationInclination: 0, // degrees
+      orbitalInclination: 7, // degrees
     },
     {
       name: 'Venus',
@@ -76,6 +76,8 @@
       rotationPeriod: 10.7,
       rotationInclination: 26.7,
       orbitalInclination: 2.5,
+      ringInner: 7000,
+      ringOuter: 80000,
     },
     {
       name: 'Uranus',

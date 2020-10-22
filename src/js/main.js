@@ -13,7 +13,8 @@ import sunImg from '../assets/sunmap.jpg';
 import saturnRingImg from '../assets/2k_saturn_ring_alpha.png';
 import skybox from '../assets/milkyway.png';
 
-import { Loader } from 'three';
+import { Loader, MathUtils } from 'three';
+import PlanetFactory from './planet-factory';
 
 export default class Main {
   constructor() {
@@ -24,7 +25,7 @@ export default class Main {
 
     const fov = 45;
     const aspect = 2; // the canvas default
-    const near = 0.01;
+    const near = 0.001;
     const far = 30;
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 
@@ -42,6 +43,49 @@ export default class Main {
     camera.position.z = -0.5;
     camera.lookAt(0, 0, 0);
     camera.rotation.z = 2 * Math.PI;
+
+    let selectedPlanet = '';
+
+    function centerView() {
+      selectedPlanet = '';
+      camera.position.y = -0.1;
+      camera.position.z = -0.5;
+      dolly.position.set(0, 0, 0);
+    }
+
+    let cameraTarget = new THREE.Vector3(0, -0.1, -0.5);
+    let dollyTarget = new THREE.Vector3(0, 0, 0);
+
+    const centerButton = document.createElement('button');
+    centerButton.textContent = 'Center';
+    document.body.appendChild(centerButton);
+    centerButton.onclick = function () {
+      selectedPlanet = '';
+      //centerView();
+      cameraTarget = new THREE.Vector3(0, -0.1, -0.5);
+      dollyTarget = new THREE.Vector3(0, 0, 0);
+    };
+
+    const earthButton = document.createElement('button');
+    earthButton.textContent = 'Earth';
+    document.body.appendChild(earthButton);
+    earthButton.onclick = function () {
+      selectedPlanet = 'Earth';
+    };
+
+    const jupiterButton = document.createElement('button');
+    jupiterButton.textContent = 'Jupiter';
+    document.body.appendChild(jupiterButton);
+    jupiterButton.onclick = function () {
+      selectedPlanet = 'Jupiter';
+    };
+
+    const mercuryButton = document.createElement('button');
+    mercuryButton.textContent = 'Mercury';
+    document.body.appendChild(mercuryButton);
+    mercuryButton.onclick = function () {
+      selectedPlanet = 'Mercury';
+    };
 
     // camera.position.z = 2;
     // camera.position.y = 1;
@@ -123,85 +167,41 @@ export default class Main {
       }),
     };
 
-    function createPlanets() {
-      // planetery scale multipliers - need to massage these to normalize the size somewhat
-      const diameterScale = 0.000001;
-      const distanceScale = 0.0008;
-      const periodScale = 0.003;
-      const longitudeScale = Math.PI / 180;
+    const scale = {
+      diameter: 0.000001,
+      distance: 0.0008,
+      period: 0.003,
+      radians: Math.PI / 180,
+    };
 
-      let planets = [];
-      //const astMat = new THREE.MeshPhongMaterial({ color: 0xd2691e });
-      const astMat = new THREE.MeshPhongMaterial({ color: 0x886655 });
-      const astGeo = new THREE.SphereBufferGeometry(0.001, 8, 8);
-
-      for (let i = 0; i < 200; i++) {
-        const asteroid = new THREE.Mesh(astGeo, astMat);
-
-        asteroid.longitude = Math.random() * Math.PI * 2;
-        asteroid.distance =
-          0.2 + Math.pow(Math.sin(Math.random() * 2 * Math.PI), 2) * 0.25;
-        asteroid.period = 4 + Math.random() * 3; //0.5;
-        asteroid.rotation.x = Math.random() * Math.PI * 2;
-        asteroid.rotation.z = Math.random() * Math.PI * 2;
-        asteroid.rotation.y = Math.random() * Math.PI * 2;
-        asteroid.position.y = 0.015 - Math.random() * 0.03;
-        planets.push(asteroid);
-        scene.add(asteroid);
+    let tests = [];
+    planetinfo.bodies.forEach((p) => {
+      let plan = PlanetFactory.createPlanet(scale, p, texMap[p.name]);
+      if (p.ringInner) {
+        let ring = PlanetFactory.createRing(scale, p);
+        scene.add(ring);
+        tests.push(ring);
       }
-      // loop through bodies and add to scene;
-      planetinfo.bodies.forEach((p) => {
-        console.log(p.name + ':' + p.diameter);
-        //if (p.name == 'Sun') return;
-        const geo = new THREE.SphereBufferGeometry(
-          p.diameter * diameterScale,
-          64,
-          64
-        );
-        const mat = new THREE.MeshPhongMaterial({ color: p.color });
-        const planet = new THREE.Mesh(geo, texMap[p.name] || mat);
+      scene.add(plan);
+      tests.push(plan);
+    });
+    for (let i = 0; i < 2000; i++) {
+      let dist = Math.random();
 
-        if (p.name == 'Saturn') {
-          // add ring
-          const ringGeo = new THREE.RingBufferGeometry(
-            p.diameter * diameterScale * 1.15,
-            p.diameter * diameterScale * 1.8,
-            64
-          );
-          const ringMat = new THREE.MeshPhongMaterial({ color: 0x665577 });
-          const ring = new THREE.Mesh(ringGeo, ringMat);
-          ring.position.x = p.distance * distanceScale;
-          ring.distance = p.distance * distanceScale;
-          ring.period = p.period * periodScale;
-          ring.longitude = p.longitude * longitudeScale;
-          ring.dontRotate = true;
-          ring.rotation.x =
-            -Math.PI / 2 + p.rotationInclination * longitudeScale + Math.PI;
-          ring.orbitalInclination = Math.sin(
-            p.orbitalInclination * longitudeScale
-          );
-          planets.push(ring);
-          scene.add(ring);
-        }
-        // test distance and period scales
-        planet.position.x = p.distance * distanceScale;
-        planet.distance = p.distance * distanceScale;
-        planet.period = p.period * periodScale;
-        planet.longitude = p.longitude * longitudeScale;
-        planet.rotation.x = Math.PI + p.rotationInclination * longitudeScale;
-        planet.rotationPeriod = p.rotationPeriod * longitudeScale;
-        planet.rotationInclination = p.rotationInclination * longitudeScale;
-        planet.orbitalInclination = Math.sin(
-          p.orbitalInclination * longitudeScale
-        );
-        planets.push(planet);
-        scene.add(planet);
-      });
-      // return body array
-      return planets;
+      const p = {
+        diameter: 1000,
+        longitude: Math.random() * 360,
+        distance: dist * (778.6 - 227.9) + 227.9,
+        period: dist * (2920 - 1095) + 1095,
+        y: Math.random() * 64 - 32,
+      };
+      let asteroid = PlanetFactory.createAsteroid(scale, p);
+      scene.add(asteroid);
+      tests.push(asteroid);
     }
 
-    const bodies = createPlanets();
+    let bodies = tests; // createPlanets();
+    //bodies = [...bodies, ...tests];
 
     function render(time) {
       time *= 0.001;
@@ -217,7 +217,38 @@ export default class Main {
       // sun.position.z = Math.sin(time * 2) * 0.0003;
       // sun.rotation.y -= (1 / sun.rotationPeriod) * 0.01;
 
+      if (selectedPlanet == '') {
+        camera.position.lerp(cameraTarget, 0.01);
+        dolly.position.lerp(dollyTarget, 0.01);
+      } else {
+        const factor = MathUtils.clamp(
+          1 / (dolly.position.distanceTo(dollyTarget) * 300),
+          0.01,
+          1
+        );
+
+        camera.position.lerp(cameraTarget, factor);
+        dolly.position.lerp(dollyTarget, factor);
+      }
+
       bodies.forEach((planet) => {
+        if (planet.name == selectedPlanet) {
+          // dolly.position.set(
+          //   planet.position.x,
+          //   planet.position.y,
+          //   planet.position.z
+          // );
+          // camera.position.y = -0.1 * 7 * planet.diameter;
+          // camera.position.z = -0.5 * 7 * planet.diameter;
+
+          cameraTarget = new THREE.Vector3(
+            0,
+            -0.1 * 7 * planet.diameter,
+            -0.5 * 7 * planet.diameter
+          );
+          dollyTarget = planet.position;
+        }
+
         planet.position.x =
           Math.cos((time * 1) / planet.period + planet.longitude) *
           planet.distance;
