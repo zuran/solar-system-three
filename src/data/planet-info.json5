@@ -2,11 +2,11 @@
   bodies: [
     {
       name: 'Sun',
-      diameter: 1392700,
-      period: 0,
+      diameter: 13920,
+      period: 100,
       distance: 0,
       color: 0xffdf3f,
-      translucent: true,
+      longitude: 1,
       rotationPeriod: 650,
       rotationInclination: 7.25,
       orbitalInclination: 0,

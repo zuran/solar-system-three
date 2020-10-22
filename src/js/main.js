@@ -87,18 +87,22 @@ export default class Main {
       scene.background = rt;
     });
 
-    const sun = new THREE.Mesh(
-      geom,
-      new THREE.MeshBasicMaterial({
-        color: 0xffc800,
-        map: texLoader.load(sunImg),
-      })
-    );
-    sun.rotationPeriod = (planetinfo.bodies[0].rotationPeriod * Math.PI) / 180;
-    sun.rotation.x = (planetinfo.bodies[0].rotationInclination * Math.PI) / 180;
-    scene.add(sun);
+    // const sun = new THREE.Mesh(
+    //   geom,
+    //   new THREE.MeshBasicMaterial({
+    //     color: 0xffc800,
+    //     map: texLoader.load(earthImg),
+    //   })
+    // );
+    // sun.rotationPeriod = (planetinfo.bodies[0].rotationPeriod * Math.PI) / 180;
+    // sun.rotation.x = (planetinfo.bodies[0].rotationInclination * Math.PI) / 180;
+    // scene.add(sun);
 
     const texMap = {
+      Sun: new THREE.MeshBasicMaterial({
+        color: 0xffc800,
+        map: texLoader.load(sunImg),
+      }),
       Mercury: new THREE.MeshStandardMaterial({
         map: texLoader.load(mercuryImg),
       }),
@@ -121,7 +125,7 @@ export default class Main {
 
     function createPlanets() {
       // planetery scale multipliers - need to massage these to normalize the size somewhat
-      const diameterScale = 0.0000005;
+      const diameterScale = 0.000001;
       const distanceScale = 0.0008;
       const periodScale = 0.003;
       const longitudeScale = Math.PI / 180;
@@ -147,7 +151,8 @@ export default class Main {
       }
       // loop through bodies and add to scene;
       planetinfo.bodies.forEach((p) => {
-        if (p.name == 'Sun') return;
+        console.log(p.name + ':' + p.diameter);
+        //if (p.name == 'Sun') return;
         const geo = new THREE.SphereBufferGeometry(
           p.diameter * diameterScale,
           64,
@@ -208,9 +213,9 @@ export default class Main {
       }
 
       // wiggle the sun
-      sun.position.x = Math.cos(time * 2) * 0.0003;
-      sun.position.z = Math.sin(time * 2) * 0.0003;
-      sun.rotation.y -= (1 / sun.rotationPeriod) * 0.01;
+      // sun.position.x = Math.cos(time * 2) * 0.0003;
+      // sun.position.z = Math.sin(time * 2) * 0.0003;
+      // sun.rotation.y -= (1 / sun.rotationPeriod) * 0.01;
 
       bodies.forEach((planet) => {
         planet.position.x =
