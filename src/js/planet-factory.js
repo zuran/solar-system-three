@@ -8,6 +8,6 @@ export default class PlanetFactory {
   */
 
   static createPlanet() {
-    return true;
+    return false;
   }
 }
