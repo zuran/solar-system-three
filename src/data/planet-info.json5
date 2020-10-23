@@ -19,7 +19,7 @@
       color: 0xba4a00,
       longitude: 262, // degrees
       rotationPeriod: 1407.6, // hours
-      rotationInclination: 0, // degrees
+      rotationInclination: 0.034, // degrees
       orbitalInclination: 7, // degrees
     },
     {
@@ -30,7 +30,7 @@
       color: 0x48c9b0,
       longitude: 4,
       rotationPeriod: -5832.5,
-      rotationInclination: 177.3,
+      rotationInclination: 177.4,
       orbitalInclination: 3.4,
     },
     {
@@ -43,6 +43,19 @@
       rotationPeriod: 23.9,
       rotationInclination: 23.4,
       orbitalInclination: 0,
+      moons: [
+        {
+          name: 'The Moon',
+          diameter: 3475,
+          period: 27.3,
+          distance: 0.384,
+          color: 0xdddddd,
+          longitude: 1,
+          rotationPeriod: 655.7,
+          rotationInclination: 6.7,
+          orbitalInclination: 5.1,
+        },
+      ],
     },
     {
       name: 'Mars',
@@ -54,6 +67,30 @@
       rotationPeriod: 24.6,
       rotationInclination: 25.2,
       orbitalInclination: 1.9,
+      moons: [
+        {
+          name: 'Deimos',
+          diameter: 12.4,
+          period: 1.26,
+          distance: 0.02346,
+          color: 0xdddddd,
+          longitude: 0,
+          rotationPeriod: 655.7,
+          rotationInclination: 0,
+          orbitalInclination: 0.93,
+        },
+        {
+          name: 'Phobos',
+          diameter: 22,
+          period: 0.33,
+          distance: 0.006,
+          color: 0xdddddd,
+          longitude: 180,
+          rotationPeriod: 655.7,
+          rotationInclination: 0,
+          orbitalInclination: 1.093,
+        },
+      ],
     },
     {
       name: 'Jupiter',
@@ -87,7 +124,7 @@
       color: 0xd4a6f1,
       longitude: 35,
       rotationPeriod: -17.2,
-      rotationInclination: 97.9,
+      rotationInclination: 97.8,
       orbitalInclination: 0.8,
     },
     {
@@ -98,7 +135,7 @@
       color: 0x2980b9,
       longitude: 348,
       rotationPeriod: 16.1,
-      rotationInclination: 29.6,
+      rotationInclination: 28.3,
       orbitalInclination: 1.8,
     },
     {

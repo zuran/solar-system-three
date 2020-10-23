@@ -15,6 +15,8 @@ import skybox from '../assets/milkyway.png';
 
 import { Loader, MathUtils } from 'three';
 import PlanetFactory from './planet-factory';
+import PickHelper from './pick-helper';
+import { max, pick } from 'lodash';
 
 export default class Main {
   constructor() {
@@ -65,6 +67,21 @@ export default class Main {
       cameraTarget = new THREE.Vector3(0, -0.1, -0.5);
       dollyTarget = new THREE.Vector3(0, 0, 0);
     };
+
+    centerButton.style.position = 'absolute';
+    centerButton.style.bottom = '20px';
+    centerButton.style.padding = '12px 6px';
+    centerButton.style.border = '1px solid #fff';
+    centerButton.style.borderRadius = '4px';
+    centerButton.style.background = 'rgba(0,0,0,0.1)';
+    centerButton.style.color = '#fff';
+    centerButton.style.font = 'normal 40px sans-serif';
+    centerButton.style.textAlign = 'center';
+    centerButton.style.opacity = '0.5';
+    centerButton.style.outline = 'none';
+    centerButton.style.zIndex = '999';
+    centerButton.style.left = 'calc(50% - 250px)';
+    centerButton.style.width = '200px';
 
     const earthButton = document.createElement('button');
     earthButton.textContent = 'Earth';
@@ -125,11 +142,11 @@ export default class Main {
     const texLoader = new THREE.TextureLoader();
     //texLoader.load('../assets/2k_jupiter.jpg')
     // render skybox
-    const skytex = texLoader.load(skybox, () => {
-      const rt = new THREE.WebGLCubeRenderTarget(skytex.image.height);
-      rt.fromEquirectangularTexture(renderer, skytex);
-      scene.background = rt;
-    });
+    // const skytex = texLoader.load(skybox, () => {
+    //   const rt = new THREE.WebGLCubeRenderTarget(skytex.image.height);
+    //   rt.fromEquirectangularTexture(renderer, skytex);
+    //   scene.background = rt;
+    // });
 
     // const sun = new THREE.Mesh(
     //   geom,
@@ -168,7 +185,7 @@ export default class Main {
     };
 
     const scale = {
-      diameter: 0.000001,
+      diameter: 0.000002,
       distance: 0.0008,
       period: 0.003,
       radians: Math.PI / 180,
@@ -182,8 +199,41 @@ export default class Main {
         scene.add(ring);
         tests.push(ring);
       }
+
       scene.add(plan);
       tests.push(plan);
+
+      if (p.moons) {
+        let minMoonPeriod = 100000;
+        let minMoonDiameter = 100000;
+        let minMoonAct = 100000;
+        p.moons.forEach((m) => {
+          minMoonPeriod = Math.min(minMoonPeriod, m.period);
+          minMoonAct = Math.min(minMoonAct, m.distance);
+          minMoonDiameter = Math.min(minMoonDiameter, m.diameter);
+        });
+
+        p.moons.forEach((m) => {
+          const periodScale = 184 / minMoonPeriod;
+          const diameterScale = 300 / minMoonDiameter;
+
+          m.diameter = Math.max(m.diameter * diameterScale, m.diameter);
+          m.distance =
+            p.diameter * (scale.diameter / 2 / scale.distance) + // planet radius
+            m.diameter * (scale.diameter / 2 / scale.distance) + // moon radius
+            m.distance + // moon distance
+            m.diameter * // scale distance to closest moon
+              (scale.diameter / scale.distance) *
+              (m.distance / minMoonAct);
+
+          m.period = m.period * periodScale;
+          let moon = PlanetFactory.createPlanet(scale, m, texMap['Mercury']);
+          moon.isMoon = true;
+          moon.planet = plan;
+          scene.add(moon);
+          tests.push(moon);
+        });
+      }
     });
     for (let i = 0; i < 2000; i++) {
       let dist = Math.random();
@@ -196,12 +246,42 @@ export default class Main {
         y: Math.random() * 64 - 32,
       };
       let asteroid = PlanetFactory.createAsteroid(scale, p);
-      scene.add(asteroid);
-      tests.push(asteroid);
+      //scene.add(asteroid);
+      //tests.push(asteroid);
     }
 
     let bodies = tests; // createPlanets();
     //bodies = [...bodies, ...tests];
+
+    function getCanvasRelativePosition(event) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: ((event.clientX - rect.left) * canvas.width) / rect.width,
+        y: ((event.clientY - rect.top) * canvas.height) / rect.height,
+      };
+    }
+
+    const pickHelper = new PickHelper();
+
+    function setPickPosition(event) {
+      const pos = getCanvasRelativePosition(event);
+      const pickPosition = {
+        x: (pos.x / canvas.width) * 2 - 1,
+        y: (pos.y / canvas.height) * -2 + 1,
+      };
+      selectedPlanet = pickHelper.pick(pickPosition, scene, camera);
+    }
+
+    window.addEventListener('mousedown', setPickPosition);
+
+    window.addEventListener(
+      'touchstart',
+      (event) => {
+        //event.preventDefault();
+        setPickPosition(event.touches[0]);
+      },
+      { passive: false }
+    );
 
     function render(time) {
       time *= 0.001;
@@ -262,6 +342,22 @@ export default class Main {
             planet.distance;
         if (!planet.dontRotate && planet.rotationPeriod) {
           planet.rotation.y += (1 / planet.rotationPeriod) * 0.005;
+        }
+
+        if (planet.isMoon) {
+          planet.position.x += planet.planet.position.x;
+          planet.position.z += planet.planet.position.z;
+          if (planet.orbitalInclination)
+            planet.position.y += planet.planet.position.y;
+          // planet.position.x +=
+          //   Math.cos(
+          //     (time * 1) / planet.planet.period + planet.planet.longitude
+          //   ) * planet.planet.distance;
+          // planet.position.z +=
+          //   Math.sin(
+          //     (time * 1) / planet.planet.period + planet.planet.longitude
+          //   ) * planet.planet.distance;
+          //console.log(planet.position);
         }
       });
 

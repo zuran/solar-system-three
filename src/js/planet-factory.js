@@ -17,7 +17,7 @@ export default class PlanetFactory {
 
   static createAsteroid(scale, props) {
     const geometry = new SphereBufferGeometry(
-      props.diameter * scale.diameter,
+      (props.diameter * scale.diameter) / 2,
       AsteroidSegments,
       AsteroidSegments
     );
@@ -43,8 +43,10 @@ export default class PlanetFactory {
 
   static createRing(scale, props) {
     const geometry = new RingBufferGeometry(
-      props.diameter * scale.diameter + props.ringInner * scale.diameter,
-      props.diameter * scale.diameter + props.ringOuter * scale.diameter,
+      (props.diameter * scale.diameter) / 2 +
+        (props.ringInner * scale.diameter) / 2,
+      (props.diameter * scale.diameter) / 2 +
+        (props.ringOuter * scale.diameter) / 2,
       PlanetSegments
     );
     const material = new MeshPhongMaterial({ color: RingColor });
@@ -68,7 +70,7 @@ export default class PlanetFactory {
 
   static createPlanet(scale, props, texturedMaterial) {
     const geometry = new SphereBufferGeometry(
-      props.diameter * scale.diameter,
+      (props.diameter * scale.diameter) / 2,
       PlanetSegments,
       PlanetSegments
     );
@@ -79,6 +81,7 @@ export default class PlanetFactory {
     planet.position.x = props.distance * scale.distance;
     planet.rotation.x = Math.PI + props.rotationInclination * scale.radians;
 
+    planet.isClickable = true;
     planet.name = props.name;
     planet.diameter = props.diameter * scale.diameter;
     planet.distance = props.distance * scale.distance;
