@@ -13,6 +13,12 @@ import sunImg from '../assets/sunmap.jpg';
 import saturnRingImg from '../assets/2k_saturn_ring_alpha.png';
 import skybox from '../assets/milkyway.png';
 
+import ganymedeImg from '../assets/ganymede_4k.jpg';
+import callistoImg from '../assets/callisto_4k.jpg';
+import europaImg from '../assets/europa_4k.jpg';
+import ioImg from '../assets/io_8k.jpg';
+import theMoonImg from '../assets/2k_moon.jpg';
+
 import { Loader, MathUtils } from 'three';
 import PlanetFactory from './planet-factory';
 import PickHelper from './pick-helper';
@@ -142,11 +148,11 @@ export default class Main {
     const texLoader = new THREE.TextureLoader();
     //texLoader.load('../assets/2k_jupiter.jpg')
     // render skybox
-    // const skytex = texLoader.load(skybox, () => {
-    //   const rt = new THREE.WebGLCubeRenderTarget(skytex.image.height);
-    //   rt.fromEquirectangularTexture(renderer, skytex);
-    //   scene.background = rt;
-    // });
+    const skytex = texLoader.load(skybox, () => {
+      const rt = new THREE.WebGLCubeRenderTarget(skytex.image.height);
+      rt.fromEquirectangularTexture(renderer, skytex);
+      scene.background = rt;
+    });
 
     // const sun = new THREE.Mesh(
     //   geom,
@@ -181,6 +187,21 @@ export default class Main {
       }),
       Neptune: new THREE.MeshStandardMaterial({
         map: texLoader.load(neptuneImg),
+      }),
+      Ganymede: new THREE.MeshStandardMaterial({
+        map: texLoader.load(ganymedeImg),
+      }),
+      Callisto: new THREE.MeshStandardMaterial({
+        map: texLoader.load(callistoImg),
+      }),
+      Europa: new THREE.MeshStandardMaterial({
+        map: texLoader.load(europaImg),
+      }),
+      Io: new THREE.MeshStandardMaterial({
+        map: texLoader.load(ioImg),
+      }),
+      'The Moon': new THREE.MeshStandardMaterial({
+        map: texLoader.load(theMoonImg),
       }),
     };
 
@@ -224,10 +245,15 @@ export default class Main {
             m.distance + // moon distance
             m.diameter * // scale distance to closest moon
               (scale.diameter / scale.distance) *
-              (m.distance / minMoonAct);
+              (m.distance / minMoonAct) *
+              0.2;
 
           m.period = m.period * periodScale;
-          let moon = PlanetFactory.createPlanet(scale, m, texMap['Mercury']);
+          let moon = PlanetFactory.createPlanet(
+            scale,
+            m,
+            texMap[m.name] || texMap['Mercury']
+          );
           moon.isMoon = true;
           moon.planet = plan;
           scene.add(moon);
@@ -246,8 +272,8 @@ export default class Main {
         y: Math.random() * 64 - 32,
       };
       let asteroid = PlanetFactory.createAsteroid(scale, p);
-      //scene.add(asteroid);
-      //tests.push(asteroid);
+      scene.add(asteroid);
+      tests.push(asteroid);
     }
 
     let bodies = tests; // createPlanets();
@@ -284,7 +310,7 @@ export default class Main {
     );
 
     function render(time) {
-      time *= 0.001;
+      time *= 0.0001;
 
       if (resizeRendererToDisplaySize(renderer)) {
         const canvas = renderer.domElement;
@@ -323,8 +349,8 @@ export default class Main {
 
           cameraTarget = new THREE.Vector3(
             0,
-            -0.1 * 7 * planet.diameter,
-            -0.5 * 7 * planet.diameter
+            -0.1 * 4 * planet.diameter,
+            -0.5 * 4 * planet.diameter
           );
           dollyTarget = planet.position;
         }
