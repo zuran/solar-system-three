@@ -2,7 +2,7 @@
   bodies: [
     {
       name: 'Sun',
-      diameter: 13927,
+      diameter: 40000, //1392700,
       period: 100,
       distance: 0,
       color: 0xffdf3f,

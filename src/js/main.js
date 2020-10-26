@@ -9,7 +9,9 @@ import earthImg from '../assets/2k_earth_daymap.jpg';
 import marsImg from '../assets/2k_mars.jpg';
 import neptuneImg from '../assets/2k_neptune.jpg';
 import uranusImg from '../assets/2k_uranus.jpg';
-import sunImg from '../assets/sunmap.jpg';
+import sunImg from '../assets/2k_sun.jpg';
+import plutoImg from '../assets/pluto.jpg';
+
 import saturnRingImg from '../assets/2k_saturn_ring_alpha.png';
 import skybox from '../assets/milkyway.png';
 
@@ -112,7 +114,7 @@ export default class Main {
     centerButton.style.outline = 'none';
     centerButton.style.zIndex = '999';
     centerButton.style.left = 'calc(50% - 250px)';
-    centerButton.style.width = '200px';
+    centerButton.style.width = '150px';
 
     const earthButton = document.createElement('button');
     earthButton.textContent = 'Earth';
@@ -133,6 +135,34 @@ export default class Main {
     document.body.appendChild(mercuryButton);
     mercuryButton.onclick = function () {
       selectedPlanet = 'Mercury';
+    };
+
+    const saturnButton = document.createElement('button');
+    saturnButton.textContent = 'Saturn';
+    document.body.appendChild(saturnButton);
+    saturnButton.onclick = function () {
+      selectedPlanet = 'Saturn';
+    };
+
+    const uranusButton = document.createElement('button');
+    uranusButton.textContent = 'Uranus';
+    document.body.appendChild(uranusButton);
+    uranusButton.onclick = function () {
+      selectedPlanet = 'Uranus';
+    };
+
+    const neptuneButton = document.createElement('button');
+    neptuneButton.textContent = 'Neptune';
+    document.body.appendChild(neptuneButton);
+    neptuneButton.onclick = function () {
+      selectedPlanet = 'Neptune';
+    };
+
+    const plutoButton = document.createElement('button');
+    plutoButton.textContent = 'Pluto';
+    document.body.appendChild(plutoButton);
+    plutoButton.onclick = function () {
+      selectedPlanet = 'Pluto';
     };
 
     // camera.position.z = 2;
@@ -227,6 +257,9 @@ export default class Main {
       }),
       'The Moon': new THREE.MeshStandardMaterial({
         map: texLoader.load(theMoonImg),
+      }),
+      Pluto: new THREE.MeshStandardMaterial({
+        map: texLoader.load(plutoImg),
       }),
     };
 
@@ -336,7 +369,7 @@ export default class Main {
 
     function render(time) {
       const oTime = time;
-      time *= 0.0001;
+      time *= 0.00001;
 
       if (resizeRendererToDisplaySize(renderer)) {
         const canvas = renderer.domElement;
@@ -403,7 +436,7 @@ export default class Main {
             planet.orbitalInclination *
             planet.distance;
         if (!planet.dontRotate && planet.rotationPeriod) {
-          planet.rotation.y += (1 / planet.rotationPeriod) * 0.005;
+          planet.rotation.y += (1 / planet.rotationPeriod) * 0.005; // 0.023
         }
 
         if (planet.isMoon) {
