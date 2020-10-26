@@ -22,7 +22,9 @@ import theMoonImg from '../assets/2k_moon.jpg';
 import { Loader, MathUtils } from 'three';
 import PlanetFactory from './planet-factory';
 import PickHelper from './pick-helper';
-import { max, pick } from 'lodash';
+import { divide, max, pick } from 'lodash';
+
+import * as moment from 'moment';
 
 export default class Main {
   constructor() {
@@ -73,6 +75,29 @@ export default class Main {
       cameraTarget = new THREE.Vector3(0, -0.1, -0.5);
       dollyTarget = new THREE.Vector3(0, 0, 0);
     };
+
+    let date = new Date(2020, 0);
+
+    const dateBox = document.createElement('div');
+    document.body.appendChild(dateBox);
+    dateBox.textContent = date.toLocaleDateString('en-gb', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+    dateBox.style.position = 'absolute';
+    dateBox.style.bottom = '20px';
+    dateBox.style.padding = '12px 6px';
+    dateBox.style.borderRadius = '4px';
+    dateBox.style.background = 'rgba(0,0,0,0.1)';
+    dateBox.style.color = '#fff';
+    dateBox.style.font = 'normal 20px sans-serif';
+    dateBox.style.textAlign = 'center';
+    dateBox.style.opacity = '0.5';
+    dateBox.style.outline = 'none';
+    dateBox.style.zIndex = '999';
+    dateBox.style.right = 'calc(50% - 400px)';
+    dateBox.style.width = '300px';
 
     centerButton.style.position = 'absolute';
     centerButton.style.bottom = '20px';
@@ -248,7 +273,7 @@ export default class Main {
               (m.distance / minMoonAct) *
               0.2;
 
-          m.period = m.period * periodScale;
+          //m.period = m.period * periodScale;
           let moon = PlanetFactory.createPlanet(
             scale,
             m,
@@ -310,6 +335,7 @@ export default class Main {
     );
 
     function render(time) {
+      const oTime = time;
       time *= 0.0001;
 
       if (resizeRendererToDisplaySize(renderer)) {
@@ -338,6 +364,16 @@ export default class Main {
       }
 
       bodies.forEach((planet) => {
+        if (planet.name == 'Earth') {
+          const val =
+            (time / planet.period / (Math.PI * 2)) * 360 * (365.25 / 360);
+          let dt = moment('2020-01-01');
+          dt.add(val, 'day');
+
+          let dateRep = dt.format('DD MMM YYYY');
+          dateBox.textContent = dateRep;
+        }
+
         if (planet.name == selectedPlanet) {
           // dolly.position.set(
           //   planet.position.x,
