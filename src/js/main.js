@@ -80,6 +80,28 @@ export default class Main {
 
     let date = new Date(2020, 0);
 
+    const infoPanel = document.createElement('div');
+    infoPanel.style.position = 'absolute';
+    infoPanel.style.width = '300px';
+    infoPanel.style.height = '400px';
+    infoPanel.style.padding = '12px 6px';
+    infoPanel.style.border = '1px solid #fff';
+    infoPanel.style.borderRadius = '4px';
+    infoPanel.style.left = '32px';
+    infoPanel.style.top = '32px';
+    infoPanel.style.backgroundColor = 'rgba(16,16,16,0.8)';
+
+    const infoTitle = document.createElement('div');
+    infoTitle.textContent = '';
+    infoTitle.style.textAlign = 'center';
+    infoTitle.style.width = '100%';
+    infoTitle.style.color = '#ddd';
+    infoTitle.style.padding = '12px 6px';
+    infoTitle.style.font = 'normal 30px sans-serif';
+
+    document.body.appendChild(infoPanel);
+    infoPanel.appendChild(infoTitle);
+
     const dateBox = document.createElement('div');
     document.body.appendChild(dateBox);
     dateBox.textContent = date.toLocaleDateString('en-gb', {
@@ -354,6 +376,7 @@ export default class Main {
         y: (pos.y / canvas.height) * -2 + 1,
       };
       selectedPlanet = pickHelper.pick(pickPosition, scene, camera);
+      if (selectedPlanet) infoTitle.textContent = selectedPlanet;
     }
 
     window.addEventListener('mousedown', setPickPosition);
@@ -376,11 +399,6 @@ export default class Main {
         camera.aspect = canvas.clientWidth / canvas.clientHeight;
         camera.updateProjectionMatrix();
       }
-
-      // wiggle the sun
-      // sun.position.x = Math.cos(time * 2) * 0.0003;
-      // sun.position.z = Math.sin(time * 2) * 0.0003;
-      // sun.rotation.y -= (1 / sun.rotationPeriod) * 0.01;
 
       if (selectedPlanet == '') {
         camera.position.lerp(cameraTarget, 0.01);
@@ -408,14 +426,6 @@ export default class Main {
         }
 
         if (planet.name == selectedPlanet) {
-          // dolly.position.set(
-          //   planet.position.x,
-          //   planet.position.y,
-          //   planet.position.z
-          // );
-          // camera.position.y = -0.1 * 7 * planet.diameter;
-          // camera.position.z = -0.5 * 7 * planet.diameter;
-
           cameraTarget = new THREE.Vector3(
             0,
             -0.1 * 4 * planet.diameter,
@@ -444,15 +454,6 @@ export default class Main {
           planet.position.z += planet.planet.position.z;
           if (planet.orbitalInclination)
             planet.position.y += planet.planet.position.y;
-          // planet.position.x +=
-          //   Math.cos(
-          //     (time * 1) / planet.planet.period + planet.planet.longitude
-          //   ) * planet.planet.distance;
-          // planet.position.z +=
-          //   Math.sin(
-          //     (time * 1) / planet.planet.period + planet.planet.longitude
-          //   ) * planet.planet.distance;
-          //console.log(planet.position);
         }
       });
 
