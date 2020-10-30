@@ -13,7 +13,7 @@ import sunImg from '../assets/2k_sun.jpg';
 import plutoImg from '../assets/pluto.jpg';
 
 import saturnRingImg from '../assets/2k_saturn_ring_alpha.png';
-import skybox from '../assets/milkyway.png';
+import skybox from '../assets/milkyway.jpg';
 
 import ganymedeImg from '../assets/ganymede_4k.jpg';
 import callistoImg from '../assets/callisto_4k.jpg';
@@ -28,6 +28,9 @@ import mimasImg from '../assets/saturn/mimas_rgb_cyl_www.jpg';
 import rheaImg from '../assets/saturn/rhea_rgb_cyl_www.jpg';
 import tethysImg from '../assets/saturn/tethys_rgb_cyl_www.jpg';
 import titanImg from '../assets/saturn/titan_texture_map_8k__2018_editon__by_fargetanik_dd05ce1-pre.jpg';
+
+import phobosImg from '../assets/2048_phobos.jpg';
+import deimosImg from '../assets/1024_deimos.jpg';
 
 import { Loader, MathUtils } from 'three';
 import PlanetFactory from './planet-factory';
@@ -207,10 +210,6 @@ export default class Main {
     scene.add(dolly);
     dolly.add(camera);
 
-    const boxWidth = 1;
-    const boxHeight = 1;
-    const boxDepth = 1;
-
     {
       const color = 0xffffff;
       const intensity = 0.9;
@@ -224,32 +223,13 @@ export default class Main {
 
     renderer.render(scene, camera);
 
-    const geom = new THREE.SphereBufferGeometry(0.03, 64, 64);
-    const mate = new THREE.MeshStandardMaterial({
-      color: 0xccbb00,
-      //opacity: 0.5,
-      //transparent: true,
-    });
-
     const texLoader = new THREE.TextureLoader();
-    //texLoader.load('../assets/2k_jupiter.jpg')
     // render skybox
     const skytex = texLoader.load(skybox, () => {
       const rt = new THREE.WebGLCubeRenderTarget(skytex.image.height);
       rt.fromEquirectangularTexture(renderer, skytex);
       scene.background = rt;
     });
-
-    // const sun = new THREE.Mesh(
-    //   geom,
-    //   new THREE.MeshBasicMaterial({
-    //     color: 0xffc800,
-    //     map: texLoader.load(earthImg),
-    //   })
-    // );
-    // sun.rotationPeriod = (planetinfo.bodies[0].rotationPeriod * Math.PI) / 180;
-    // sun.rotation.x = (planetinfo.bodies[0].rotationInclination * Math.PI) / 180;
-    // scene.add(sun);
 
     const texMap = {
       Sun: new THREE.MeshBasicMaterial({
@@ -308,6 +288,12 @@ export default class Main {
       Titan: new THREE.MeshStandardMaterial({
         map: texLoader.load(titanImg),
       }),
+      Deimos: new THREE.MeshStandardMaterial({
+        map: texLoader.load(deimosImg),
+      }),
+      Phobos: new THREE.MeshStandardMaterial({
+        map: texLoader.load(phobosImg),
+      }),
       'The Moon': new THREE.MeshStandardMaterial({
         map: texLoader.load(theMoonImg),
       }),
@@ -349,6 +335,7 @@ export default class Main {
           const periodScale = 184 / minMoonPeriod;
           const diameterScale = 300 / minMoonDiameter;
 
+          m.rotationInclination += p.rotationInclination;
           m.diameter = Math.max(m.diameter * diameterScale, m.diameter);
           m.distance =
             p.diameter * (scale.diameter / 2 / scale.distance) + // planet radius
@@ -365,6 +352,8 @@ export default class Main {
             m,
             texMap[m.name] || texMap['Mercury']
           );
+          moon.orbitalInclination += plan.rotationInclination;
+
           moon.isMoon = true;
           moon.planet = plan;
           scene.add(moon);
@@ -423,7 +412,7 @@ export default class Main {
 
     function render(time) {
       const oTime = time;
-      time *= 0.00001;
+      time *= 0.000005;
 
       if (resizeRendererToDisplaySize(renderer)) {
         const canvas = renderer.domElement;
@@ -431,18 +420,20 @@ export default class Main {
         camera.updateProjectionMatrix();
       }
 
-      if (selectedPlanet == '') {
-        camera.position.lerp(cameraTarget, 0.01);
-        dolly.position.lerp(dollyTarget, 0.01);
-      } else {
-        const factor = MathUtils.clamp(
-          1 / (dolly.position.distanceTo(dollyTarget) * 300),
-          0.01,
-          1
-        );
+      if (!isVR) {
+        if (selectedPlanet == '') {
+          camera.position.lerp(cameraTarget, 0.01);
+          dolly.position.lerp(dollyTarget, 0.01);
+        } else {
+          const factor = MathUtils.clamp(
+            1 / (dolly.position.distanceTo(dollyTarget) * 300),
+            0.01,
+            1
+          );
 
-        camera.position.lerp(cameraTarget, factor);
-        dolly.position.lerp(dollyTarget, factor);
+          camera.position.lerp(cameraTarget, factor);
+          dolly.position.lerp(dollyTarget, factor);
+        }
       }
 
       bodies.forEach((planet) => {
@@ -452,7 +443,7 @@ export default class Main {
           let dt = moment('2020-01-01');
           dt.add(val, 'day');
 
-          let dateRep = dt.format('DD MMM YYYY');
+          let dateRep = 'Earth Date: ' + dt.format('DD MMM YYYY');
           dateBox.textContent = dateRep;
         }
 
@@ -471,20 +462,23 @@ export default class Main {
         planet.position.z =
           Math.sin((time * 1) / planet.period + planet.longitude) *
           planet.distance;
-        if (planet.orbitalInclination)
+
+        if (!planet.dontRotate && planet.rotationPeriod) {
+          planet.rotation.y += (1 / planet.rotationPeriod) * 0.005;
+        }
+        if (planet.orbitalInclination) {
           planet.position.y =
-            Math.sin(time / planet.period) *
+            -Math.sin(time / planet.period + planet.longitude) *
             planet.orbitalInclination *
             planet.distance;
-        if (!planet.dontRotate && planet.rotationPeriod) {
-          planet.rotation.y += (1 / planet.rotationPeriod) * 0.005; // 0.023
         }
 
         if (planet.isMoon) {
           planet.position.x += planet.planet.position.x;
           planet.position.z += planet.planet.position.z;
-          if (planet.orbitalInclination)
-            planet.position.y += planet.planet.position.y;
+          planet.position.y += planet.planet.position.y;
+          //if (planet.orbitalInclination)
+          //  planet.position.y += planet.planet.position.y;
         }
       });
 

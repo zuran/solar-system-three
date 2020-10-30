@@ -16,6 +16,11 @@ export default class PickHelper {
     if (intersectedObjects.length) {
       this.pickedObject = intersectedObjects[0].object;
       console.log(this.pickedObject.name);
+      if (this.pickedObject.name == 'SaturnRing') {
+        this.pickedObject = intersectedObjects[1]
+          ? intersectedObjects[1].object
+          : this.pickedObject;
+      }
       if (this.pickedObject.isClickable) return this.pickedObject.name;
     }
     return undefined;

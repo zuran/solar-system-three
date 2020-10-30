@@ -49,7 +49,11 @@ export default class PlanetFactory {
         (props.ringOuter * scale.diameter) / 2,
       PlanetSegments
     );
-    const material = new MeshPhongMaterial({ color: RingColor });
+    const material = new MeshPhongMaterial({
+      color: RingColor,
+      opacity: 0.6,
+      transparent: false,
+    });
     const ring = new Mesh(geometry, material);
 
     ring.position.x = props.distance * scale.distance;
