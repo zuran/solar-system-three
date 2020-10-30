@@ -21,6 +21,14 @@ import europaImg from '../assets/europa_4k.jpg';
 import ioImg from '../assets/io_8k.jpg';
 import theMoonImg from '../assets/2k_moon.jpg';
 
+import dioneImg from '../assets/saturn/dione_rgb_cyl_www.jpg';
+import enceladusImg from '../assets/saturn/enceladus_rgb_cyl_www.jpg';
+import iapetusImg from '../assets/saturn/iapetus_rgb_cyl_www.jpg';
+import mimasImg from '../assets/saturn/mimas_rgb_cyl_www.jpg';
+import rheaImg from '../assets/saturn/rhea_rgb_cyl_www.jpg';
+import tethysImg from '../assets/saturn/tethys_rgb_cyl_www.jpg';
+import titanImg from '../assets/saturn/titan_texture_map_8k__2018_editon__by_fargetanik_dd05ce1-pre.jpg';
+
 import { Loader, MathUtils } from 'three';
 import PlanetFactory from './planet-factory';
 import PickHelper from './pick-helper';
@@ -74,6 +82,7 @@ export default class Main {
     centerButton.onclick = function () {
       selectedPlanet = '';
       //centerView();
+      infoTitle.textContent = '';
       cameraTarget = new THREE.Vector3(0, -0.1, -0.5);
       dollyTarget = new THREE.Vector3(0, 0, 0);
     };
@@ -276,6 +285,28 @@ export default class Main {
       }),
       Io: new THREE.MeshStandardMaterial({
         map: texLoader.load(ioImg),
+      }),
+      // Saturn moons
+      Dione: new THREE.MeshStandardMaterial({
+        map: texLoader.load(dioneImg),
+      }),
+      Enceladus: new THREE.MeshStandardMaterial({
+        map: texLoader.load(enceladusImg),
+      }),
+      Iapetus: new THREE.MeshStandardMaterial({
+        map: texLoader.load(iapetusImg),
+      }),
+      Mimas: new THREE.MeshStandardMaterial({
+        map: texLoader.load(mimasImg),
+      }),
+      Rhea: new THREE.MeshStandardMaterial({
+        map: texLoader.load(rheaImg),
+      }),
+      Tethys: new THREE.MeshStandardMaterial({
+        map: texLoader.load(tethysImg),
+      }),
+      Titan: new THREE.MeshStandardMaterial({
+        map: texLoader.load(titanImg),
       }),
       'The Moon': new THREE.MeshStandardMaterial({
         map: texLoader.load(theMoonImg),
