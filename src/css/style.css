@@ -1,4 +1,6 @@
-html, body, section {
+html,
+body,
+section {
   margin: 0;
   height: 100%;
 }
@@ -7,4 +9,8 @@ html, body, section {
   width: 100%;
   height: 100%;
   display: block;
+}
+
+#dataPanel > div {
+  padding: 4px;
 }

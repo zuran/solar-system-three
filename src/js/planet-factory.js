@@ -52,7 +52,7 @@ export default class PlanetFactory {
     const material = new MeshPhongMaterial({
       color: RingColor,
       opacity: 0.6,
-      transparent: false,
+      transparent: true,
     });
     const ring = new Mesh(geometry, material);
 
@@ -73,8 +73,10 @@ export default class PlanetFactory {
   }
 
   static createPlanet(scale, props, texturedMaterial) {
+    const diameter =
+      props.name == 'Sun' ? props.diameter / 34.8175 : props.diameter;
     const geometry = new SphereBufferGeometry(
-      (props.diameter * scale.diameter) / 2,
+      (diameter * scale.diameter) / 2,
       PlanetSegments,
       PlanetSegments
     );
@@ -87,7 +89,7 @@ export default class PlanetFactory {
 
     planet.isClickable = true;
     planet.name = props.name;
-    planet.diameter = props.diameter * scale.diameter;
+    planet.diameter = diameter * scale.diameter;
     planet.distance = props.distance * scale.distance;
     planet.period = props.period * scale.period;
     planet.longitude = props.longitude * scale.radians;

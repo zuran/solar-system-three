@@ -35,7 +35,7 @@ import deimosImg from '../assets/1024_deimos.jpg';
 import { Loader, MathUtils } from 'three';
 import PlanetFactory from './planet-factory';
 import PickHelper from './pick-helper';
-import { divide, max, pick } from 'lodash';
+import { divide, max, pick, update } from 'lodash';
 
 import * as moment from 'moment';
 
@@ -49,7 +49,7 @@ export default class Main {
     const fov = 45;
     const aspect = 2; // the canvas default
     const near = 0.001;
-    const far = 30;
+    const far = 1000;
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 
     let isVR = false;
@@ -86,6 +86,7 @@ export default class Main {
       selectedPlanet = '';
       //centerView();
       infoTitle.textContent = '';
+      dataPanel.innerHTML = '';
       cameraTarget = new THREE.Vector3(0, -0.1, -0.5);
       dollyTarget = new THREE.Vector3(0, 0, 0);
     };
@@ -94,25 +95,85 @@ export default class Main {
 
     const infoPanel = document.createElement('div');
     infoPanel.style.position = 'absolute';
-    infoPanel.style.width = '300px';
-    infoPanel.style.height = '400px';
-    infoPanel.style.padding = '12px 6px';
+    infoPanel.style.width = '320px';
+    //infoPanel.style.height = '250px';
+    //infoPanel.style.padding = '12px 6px';
     infoPanel.style.border = '1px solid #fff';
     infoPanel.style.borderRadius = '4px';
     infoPanel.style.left = '32px';
     infoPanel.style.top = '32px';
     infoPanel.style.backgroundColor = 'rgba(16,16,16,0.8)';
+    infoPanel.style.color = '#ddd';
+    infoPanel.style.font = 'normal 30px sans-serif';
 
     const infoTitle = document.createElement('div');
     infoTitle.textContent = '';
     infoTitle.style.textAlign = 'center';
-    infoTitle.style.width = '100%';
-    infoTitle.style.color = '#ddd';
-    infoTitle.style.padding = '12px 6px';
-    infoTitle.style.font = 'normal 30px sans-serif';
+    infoTitle.style.height = '30px';
+    infoTitle.style.padding = '10px';
+    infoTitle.style.borderBottom = '1px solid #fff';
+
+    const dataPanel = document.createElement('div');
+    dataPanel.style.padding = '10px';
+    dataPanel.style.fontSize = '15px';
+    dataPanel.id = 'dataPanel';
+
+    function getInfoPanel(info, isMoon, planetName) {
+      const panel = document.createElement('div');
+      panel.style.padding = '20px';
+
+      const pDiameter = document.createElement('div');
+      const pPeriod = document.createElement('div');
+      const pDistance = document.createElement('div');
+      const pRotationPeriod = document.createElement('div');
+      const pRotationInclination = document.createElement('div');
+      const pOrbitalInclination = document.createElement('div');
+
+      pDiameter.textContent =
+        'Diameter: ' + info.ogDiameter.toLocaleString() + ' km';
+      pPeriod.textContent =
+        'Orbital period: ' + info.period.toLocaleString() + ' days';
+      pDistance.textContent =
+        'Avg. distance from ' +
+        (isMoon ? planetName : 'Sun') +
+        ': ' +
+        Math.round(info.ogDistance * 1000000).toLocaleString() +
+        ' km';
+      pRotationPeriod.textContent =
+        'Rotation period: ' + info.rotationPeriod.toLocaleString() + ' hrs';
+      pRotationInclination.textContent =
+        'Obliquity: ' + info.ogObliquity.toLocaleString() + '°';
+      pOrbitalInclination.textContent =
+        'Oribital inclination: ' +
+        info.orbitalInclination.toLocaleString() +
+        '°';
+
+      const isSun = info.name == 'Sun';
+
+      panel.appendChild(pDiameter);
+      if (!isSun) panel.appendChild(pPeriod);
+      if (!isSun) panel.appendChild(pDistance);
+      panel.appendChild(pRotationPeriod);
+      panel.appendChild(pRotationInclination);
+      if (!isSun) panel.appendChild(pOrbitalInclination);
+
+      return panel;
+      /*
+      name: 'Mercury',
+      diameter: 4879, // km
+      period: 88, // Earth days
+      distance: 57.9, // 10^6 km
+      color: 0xba4a00,
+      longitude: 262, // degrees
+      rotationPeriod: 1407.6, // hours
+      rotationInclination: 0.034, // degrees
+      orbitalInclination: 7, // degrees
+      */
+    }
 
     document.body.appendChild(infoPanel);
     infoPanel.appendChild(infoTitle);
+    infoPanel.appendChild(dataPanel);
 
     const dateBox = document.createElement('div');
     document.body.appendChild(dateBox);
@@ -150,11 +211,14 @@ export default class Main {
     centerButton.style.left = 'calc(50% - 250px)';
     centerButton.style.width = '150px';
 
+    let updateInfo = false;
+
     const earthButton = document.createElement('button');
     earthButton.textContent = 'Earth';
     document.body.appendChild(earthButton);
     earthButton.onclick = function () {
       selectedPlanet = 'Earth';
+      updateInfo = true;
     };
 
     const jupiterButton = document.createElement('button');
@@ -162,6 +226,7 @@ export default class Main {
     document.body.appendChild(jupiterButton);
     jupiterButton.onclick = function () {
       selectedPlanet = 'Jupiter';
+      updateInfo = true;
     };
 
     const mercuryButton = document.createElement('button');
@@ -169,6 +234,7 @@ export default class Main {
     document.body.appendChild(mercuryButton);
     mercuryButton.onclick = function () {
       selectedPlanet = 'Mercury';
+      updateInfo = true;
     };
 
     const saturnButton = document.createElement('button');
@@ -176,6 +242,7 @@ export default class Main {
     document.body.appendChild(saturnButton);
     saturnButton.onclick = function () {
       selectedPlanet = 'Saturn';
+      updateInfo = true;
     };
 
     const uranusButton = document.createElement('button');
@@ -183,6 +250,7 @@ export default class Main {
     document.body.appendChild(uranusButton);
     uranusButton.onclick = function () {
       selectedPlanet = 'Uranus';
+      updateInfo = true;
     };
 
     const neptuneButton = document.createElement('button');
@@ -190,6 +258,7 @@ export default class Main {
     document.body.appendChild(neptuneButton);
     neptuneButton.onclick = function () {
       selectedPlanet = 'Neptune';
+      updateInfo = true;
     };
 
     const plutoButton = document.createElement('button');
@@ -197,6 +266,7 @@ export default class Main {
     document.body.appendChild(plutoButton);
     plutoButton.onclick = function () {
       selectedPlanet = 'Pluto';
+      updateInfo = true;
     };
 
     // camera.position.z = 2;
@@ -311,13 +381,22 @@ export default class Main {
 
     let tests = [];
     planetinfo.bodies.forEach((p) => {
+      p.ogDiameter = p.diameter;
+      p.ogDistance = p.distance;
+      p.ogObliquity = p.rotationInclination;
+
       let plan = PlanetFactory.createPlanet(scale, p, texMap[p.name]);
       if (p.ringInner) {
         let ring = PlanetFactory.createRing(scale, p);
         scene.add(ring);
         tests.push(ring);
+        ring = PlanetFactory.createRing(scale, p);
+        ring.rotation.y = Math.PI;
+        scene.add(ring);
+        tests.push(ring);
       }
 
+      plan.info = p;
       scene.add(plan);
       tests.push(plan);
 
@@ -334,6 +413,10 @@ export default class Main {
         p.moons.forEach((m) => {
           const periodScale = 184 / minMoonPeriod;
           const diameterScale = 300 / minMoonDiameter;
+
+          m.ogDiameter = m.diameter;
+          m.ogDistance = m.distance;
+          m.ogObliquity = m.rotationInclination;
 
           m.rotationInclination += p.rotationInclination;
           m.diameter = Math.max(m.diameter * diameterScale, m.diameter);
@@ -354,6 +437,7 @@ export default class Main {
           );
           moon.orbitalInclination += plan.rotationInclination;
 
+          moon.info = m;
           moon.isMoon = true;
           moon.planet = plan;
           scene.add(moon);
@@ -361,15 +445,23 @@ export default class Main {
         });
       }
     });
-    for (let i = 0; i < 2000; i++) {
+    for (let i = 0; i < 200; i++) {
       let dist = Math.random();
+
+      // Get range between Mars and Jupiter
+      const dMin =
+        planetinfo.bodies[4].distance +
+        (planetinfo.bodies[4].diameter / 1000) * 2;
+      const dMax =
+        planetinfo.bodies[5].distance -
+        (planetinfo.bodies[5].diameter / 1000) * 2;
 
       const p = {
         diameter: 1000,
         longitude: Math.random() * 360,
-        distance: dist * (778.6 - 227.9) + 227.9,
+        distance: dist * (dMax - dMin) + dMin,
         period: dist * (2920 - 1095) + 1095,
-        y: Math.random() * 64 - 32,
+        y: Math.random() * 32 - 16,
       };
       let asteroid = PlanetFactory.createAsteroid(scale, p);
       scene.add(asteroid);
@@ -378,6 +470,22 @@ export default class Main {
 
     let bodies = tests; // createPlanets();
     //bodies = [...bodies, ...tests];
+
+    let bodyScale = 1;
+    let distanceScale = 1;
+    const growButton = document.createElement('button');
+    growButton.textContent = 'Grow';
+    document.body.appendChild(growButton);
+    growButton.onclick = function () {
+      bodyScale *= 1.1;
+      distanceScale *= 1.05;
+
+      bodies.forEach((planet) => {
+        //if (planet.name != 'Sun')
+        planet.scale.set(bodyScale, bodyScale, bodyScale);
+        planet.distance *= distanceScale;
+      });
+    };
 
     function getCanvasRelativePosition(event) {
       const rect = canvas.getBoundingClientRect();
@@ -396,7 +504,10 @@ export default class Main {
         y: (pos.y / canvas.height) * -2 + 1,
       };
       selectedPlanet = pickHelper.pick(pickPosition, scene, camera);
-      if (selectedPlanet) infoTitle.textContent = selectedPlanet;
+      if (selectedPlanet) {
+        infoTitle.textContent = selectedPlanet;
+        updateInfo = true;
+      }
     }
 
     window.addEventListener('mousedown', setPickPosition);
@@ -410,9 +521,24 @@ export default class Main {
       { passive: false }
     );
 
+    let lastTime = 0;
+    let planetOrbitClock = 0;
+    let moonOrbitClock = 0;
+    let rotationClock = 0;
+    let clock = 0;
+
+    let moonOrbitScale = 0.000005;
+    let planetOrbitScale = 0.00005;
+    let rotationScale = 0.000005;
+
     function render(time) {
-      const oTime = time;
-      time *= 0.000005;
+      const timeDiff = time - lastTime;
+      lastTime = time;
+
+      clock += timeDiff * 0.000005;
+      planetOrbitClock += timeDiff * planetOrbitScale;
+      moonOrbitClock += timeDiff * moonOrbitScale;
+      rotationClock += timeDiff * rotationScale;
 
       if (resizeRendererToDisplaySize(renderer)) {
         const canvas = renderer.domElement;
@@ -439,7 +565,9 @@ export default class Main {
       bodies.forEach((planet) => {
         if (planet.name == 'Earth') {
           const val =
-            (time / planet.period / (Math.PI * 2)) * 360 * (365.25 / 360);
+            (planetOrbitClock / planet.period / (Math.PI * 2)) *
+            360 *
+            (365.25 / 360);
           let dt = moment('2020-01-01');
           dt.add(val, 'day');
 
@@ -448,6 +576,16 @@ export default class Main {
         }
 
         if (planet.name == selectedPlanet) {
+          if (updateInfo) {
+            updateInfo = false;
+            infoTitle.textContent = selectedPlanet;
+            dataPanel.innerHTML = getInfoPanel(
+              planet.info,
+              planet.isMoon,
+              planet.isMoon ? planet.planet.name : ''
+            ).innerHTML;
+          }
+
           cameraTarget = new THREE.Vector3(
             0,
             -0.1 * 4 * planet.diameter,
@@ -456,21 +594,24 @@ export default class Main {
           dollyTarget = planet.position;
         }
 
+        const bClock = planet.isMoon ? moonOrbitClock : planetOrbitClock;
+
         planet.position.x =
-          Math.cos((time * 1) / planet.period + planet.longitude) *
+          Math.cos((bClock * 1) / planet.period + planet.longitude) *
           planet.distance;
         planet.position.z =
-          Math.sin((time * 1) / planet.period + planet.longitude) *
+          Math.sin((bClock * 1) / planet.period + planet.longitude) *
           planet.distance;
+
+        if (planet.orbitalInclination) {
+          planet.position.y =
+            -Math.sin(bClock / planet.period + planet.longitude) *
+            planet.orbitalInclination *
+            planet.distance;
+        }
 
         if (!planet.dontRotate && planet.rotationPeriod) {
           planet.rotation.y += (1 / planet.rotationPeriod) * 0.005;
-        }
-        if (planet.orbitalInclination) {
-          planet.position.y =
-            -Math.sin(time / planet.period + planet.longitude) *
-            planet.orbitalInclination *
-            planet.distance;
         }
 
         if (planet.isMoon) {
