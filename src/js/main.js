@@ -5,10 +5,10 @@ import { VRButton } from '../resources/examples/jsm/webxr/VRButton.js';
 import { Loader, MathUtils, Texture } from 'three';
 import PlanetFactory from './planet-factory';
 import PickHelper from './pick-helper';
-import { divide, max, pick, update } from 'lodash';
 
 import * as moment from 'moment';
 import { textures, createTextureMap } from './texture-import';
+import Lights from './components/lights';
 
 export default class Main {
   constructor() {
@@ -184,83 +184,31 @@ export default class Main {
 
     let updateInfo = false;
 
-    const earthButton = document.createElement('button');
-    earthButton.textContent = 'Earth';
-    document.body.appendChild(earthButton);
-    earthButton.onclick = function () {
-      selectedPlanet = 'Earth';
-      updateInfo = true;
-    };
+    createShortcutButtons();
 
-    const jupiterButton = document.createElement('button');
-    jupiterButton.textContent = 'Jupiter';
-    document.body.appendChild(jupiterButton);
-    jupiterButton.onclick = function () {
-      selectedPlanet = 'Jupiter';
-      updateInfo = true;
-    };
+    function createShortcutButtons() {
+      const buttonDiv = document.createElement('div');
+      buttonDiv.id = 'planetButtons';
+      document.body.appendChild(buttonDiv);
 
-    const mercuryButton = document.createElement('button');
-    mercuryButton.textContent = 'Mercury';
-    document.body.appendChild(mercuryButton);
-    mercuryButton.onclick = function () {
-      selectedPlanet = 'Mercury';
-      updateInfo = true;
-    };
-
-    const saturnButton = document.createElement('button');
-    saturnButton.textContent = 'Saturn';
-    document.body.appendChild(saturnButton);
-    saturnButton.onclick = function () {
-      selectedPlanet = 'Saturn';
-      updateInfo = true;
-    };
-
-    const uranusButton = document.createElement('button');
-    uranusButton.textContent = 'Uranus';
-    document.body.appendChild(uranusButton);
-    uranusButton.onclick = function () {
-      selectedPlanet = 'Uranus';
-      updateInfo = true;
-    };
-
-    const neptuneButton = document.createElement('button');
-    neptuneButton.textContent = 'Neptune';
-    document.body.appendChild(neptuneButton);
-    neptuneButton.onclick = function () {
-      selectedPlanet = 'Neptune';
-      updateInfo = true;
-    };
-
-    const plutoButton = document.createElement('button');
-    plutoButton.textContent = 'Pluto';
-    document.body.appendChild(plutoButton);
-    plutoButton.onclick = function () {
-      selectedPlanet = 'Pluto';
-      updateInfo = true;
-    };
-
-    // camera.position.z = 2;
-    // camera.position.y = 1;
-    // camera.lookAt(0, 0, 0);
+      planetinfo.bodies.forEach((p) => {
+        const button = document.createElement('button');
+        button.textContent = p.name;
+        buttonDiv.appendChild(button);
+        button.onclick = function () {
+          selectedPlanet = p.name;
+          updateInfo = true;
+        };
+      });
+    }
 
     const scene = new THREE.Scene();
+    const lights = new Lights(scene);
 
     const dolly = new THREE.Group();
     dolly.position.set(0, 0, 0);
     scene.add(dolly);
     dolly.add(camera);
-
-    {
-      const color = 0xffffff;
-      const intensity = 0.9;
-      const light = new THREE.PointLight(color, intensity);
-      light.position.set(0, 0, 0);
-      scene.add(light);
-
-      const amblight = new THREE.AmbientLight(color, 0.2);
-      scene.add(amblight);
-    }
 
     renderer.render(scene, camera);
 
@@ -378,24 +326,23 @@ export default class Main {
       tests.push(asteroid);
     }
 
-    let bodies = tests; // createPlanets();
-    //bodies = [...bodies, ...tests];
+    let bodies = tests;
 
-    let bodyScale = 1;
-    let distanceScale = 1;
-    const growButton = document.createElement('button');
-    growButton.textContent = 'Grow';
-    document.body.appendChild(growButton);
-    growButton.onclick = function () {
-      bodyScale *= 1.1;
-      distanceScale *= 1.05;
+    // let bodyScale = 1;
+    // let distanceScale = 1;
+    // const growButton = document.createElement('button');
+    // growButton.textContent = 'Grow';
+    // document.body.appendChild(growButton);
+    // growButton.onclick = function () {
+    //   bodyScale *= 1.1;
+    //   distanceScale *= 1.05;
 
-      bodies.forEach((planet) => {
-        //if (planet.name != 'Sun')
-        planet.scale.set(bodyScale, bodyScale, bodyScale);
-        planet.distance *= distanceScale;
-      });
-    };
+    //   bodies.forEach((planet) => {
+    //     //if (planet.name != 'Sun')
+    //     planet.scale.set(bodyScale, bodyScale, bodyScale);
+    //     planet.distance *= distanceScale;
+    //   });
+    // };
 
     function getCanvasRelativePosition(event) {
       const rect = canvas.getBoundingClientRect();

@@ -14,3 +14,25 @@ section {
 #dataPanel > div {
   padding: 4px;
 }
+
+#planetButtons {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  width: 200px;
+}
+
+#planetButtons > button {
+  padding: 5px;
+  margin: 2px;
+  border: 1px solid #fff;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.1);
+  color: #fff;
+  font: normal 30px sans-serif;
+  text-align: center;
+  opacity: 0.5;
+  outline: none;
+  z-index: 999;
+  width: 100%;
+}
