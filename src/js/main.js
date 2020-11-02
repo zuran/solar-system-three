@@ -8,7 +8,7 @@ import PickHelper from './pick-helper';
 import { divide, max, pick, update } from 'lodash';
 
 import * as moment from 'moment';
-import TextureImporter from './texture-import';
+import { textures, createTextureMap } from './texture-import';
 
 export default class Main {
   constructor() {
@@ -265,17 +265,22 @@ export default class Main {
     renderer.render(scene, camera);
 
     const texLoader = new THREE.TextureLoader();
+    const texMap = createTextureMap(
+      texLoader,
+      textures,
+      THREE.MeshBasicMaterial,
+      THREE.MeshStandardMaterial
+    );
+
     // render skybox
     const skytex = texLoader.load(
-      TextureImporter.importTextures().skybox,
+      textures.find((n) => n.name === 'SkyBox').image,
       () => {
         const rt = new THREE.WebGLCubeRenderTarget(skytex.image.height);
         rt.fromEquirectangularTexture(renderer, skytex);
         scene.background = rt;
       }
     );
-
-    const texMap = TextureImporter.getTexMap();
 
     const scale = {
       diameter: 0.000002,
