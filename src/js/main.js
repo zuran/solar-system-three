@@ -57,6 +57,7 @@ export default class Main {
       selectedPlanet = '';
       //centerView();
       infoTitle.textContent = '';
+      infoPanel.style.display = 'none';
       dataPanel.innerHTML = '';
       cameraTarget = new THREE.Vector3(0, -0.1, -0.5);
       dollyTarget = new THREE.Vector3(0, 0, 0);
@@ -65,6 +66,7 @@ export default class Main {
     let date = new Date(2020, 0);
 
     const infoPanel = document.createElement('div');
+    infoPanel.style.display = 'none';
     infoPanel.style.position = 'absolute';
     infoPanel.style.width = '320px';
     //infoPanel.style.height = '250px';
@@ -382,17 +384,31 @@ export default class Main {
     let planetOrbitClock = 0;
     let moonOrbitClock = 0;
     let rotationClock = 0;
-    let clock = 0;
 
     let moonOrbitScale = 0.000005;
-    let planetOrbitScale = 0.00005;
+    let planetOrbitScale = 1.5 * 0.00005;
     let rotationScale = 0.000005;
+
+    // planet period time scale control
+    const planetPeriodSlider = document.createElement('input');
+    planetPeriodSlider.type = 'range';
+    planetPeriodSlider.min = -10;
+    planetPeriodSlider.max = 10;
+    planetPeriodSlider.value = 1;
+    document.body.appendChild(planetPeriodSlider);
+    planetPeriodSlider.style.position = 'absolute';
+    planetPeriodSlider.style.top = '20px';
+    planetPeriodSlider.style.right = 'calc(50% - 65px)';
+    planetPeriodSlider.onchange = function () {
+      const val = planetPeriodSlider.value;
+      planetOrbitScale =
+        Math.pow(1.5, Math.abs(val)) * 0.00005 * Math.sign(val);
+    };
 
     function render(time) {
       const timeDiff = time - lastTime;
       lastTime = time;
 
-      clock += timeDiff * 0.000005;
       planetOrbitClock += timeDiff * planetOrbitScale;
       moonOrbitClock += timeDiff * moonOrbitScale;
       rotationClock += timeDiff * rotationScale;
@@ -442,6 +458,7 @@ export default class Main {
               planet.isMoon ? planet.planet.name : ''
             ).innerHTML;
           }
+          infoPanel.style.display = 'block';
 
           cameraTarget = new THREE.Vector3(
             0,
@@ -454,15 +471,17 @@ export default class Main {
         const bClock = planet.isMoon ? moonOrbitClock : planetOrbitClock;
 
         planet.position.x =
-          Math.cos((bClock * 1) / planet.period + planet.longitude) *
-          planet.distance;
+          Math.cos(
+            (bClock * 1) / planet.period + planet.longitude + Math.PI / 2
+          ) * planet.distance;
         planet.position.z =
-          Math.sin((bClock * 1) / planet.period + planet.longitude) *
-          planet.distance;
+          Math.sin(
+            (bClock * 1) / planet.period + planet.longitude + Math.PI / 2
+          ) * planet.distance;
 
         if (planet.orbitalInclination) {
           planet.position.y =
-            -Math.sin(bClock / planet.period + planet.longitude) *
+            -Math.sin(bClock / planet.period + planet.longitude + Math.PI / 2) *
             planet.orbitalInclination *
             planet.distance;
         }
